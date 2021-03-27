@@ -2,8 +2,8 @@
 # Name of group from hosts.ini on which the playbook's commands will be run [e.g. awsservers]
 - hosts: awsservers
   environment:
-    AWS_ACCESS_KEY_ID: AKIAJUCC6BIXCTHZTY7A
-    AWS_SECRET_ACCESS_KEY: HhxZnccccw5oHm4eoVwncvhMPcQ0bYnj45DCLUgJ
+    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
+    AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
     AWS_REGION: us-west-2
   tasks:
   - name: Create SSH Key
@@ -133,12 +133,12 @@
   - debug: var=ps
 
   - name: Set AWS Access Key
-    shell: export AWS_ACCESS_KEY_ID=AKIAJUCC6BIXCTHZTY7A
+    shell: export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID
     register: ps
   - debug: var=ps
 
   - name: Set AWS Secret Key
-    shell: export AWS_SECRET_ACCESS_KEY=HhxZnccccw5oHm4eoVwncvhMPcQ0bYnj45DCLUgJ
+    shell: export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY
     register: ps
   - debug: var=ps
 
