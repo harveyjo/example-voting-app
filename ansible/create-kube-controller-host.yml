@@ -218,31 +218,31 @@
 
 # Setup Flux CD To Keep Cluster In Sync With Wordpress Repo
 
-  - name: Download Fluxctl
-    shell: wget https://github.com/fluxcd/flux/releases/download/1.19.0/fluxctl_linux_amd64
-    register: ps
-  - debug: var=ps
+  # - name: Download Fluxctl
+  #   shell: wget https://github.com/fluxcd/flux/releases/download/1.19.0/fluxctl_linux_amd64
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Make fluxctl executable
-    shell: chmod +x fluxctl_linux_amd64 
-    register: ps
-  - debug: var=ps
+  # - name: Make fluxctl executable
+  #   shell: chmod +x fluxctl_linux_amd64 
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Create Flux Kuberntes namespace
-    shell: kubectl create ns flux
-    ignore_errors: yes
-    register: ps
-  - debug: var=ps
+  # - name: Create Flux Kuberntes namespace
+  #   shell: kubectl create ns flux
+  #   ignore_errors: yes
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Install Flux
-    shell: ./fluxctl_linux_amd64 install \
-            --git-user=flux \
-            --git-email=jonathan@hushbyte.com \
-            --git-url=git@github.com:harveyjo/example-voting-app.git \
-            --git-path=namespaces,workloads \
-            --namespace=flux | kubectl apply -f -
-    register: ps
-  - debug: var=ps
+  # - name: Install Flux
+  #   shell: ./fluxctl_linux_amd64 install \
+  #           --git-user=flux \
+  #           --git-email=jonathan@hushbyte.com \
+  #           --git-url=git@github.com:harveyjo/example-voting-app.git \
+  #           --git-path=namespaces,workloads \
+  #           --namespace=flux | kubectl apply -f -
+  #   register: ps
+  # - debug: var=ps
 
   # - name: Copy Flux Deployment Configuration
   #   copy:
@@ -261,15 +261,15 @@
     register: ps
   - debug: var=ps
 
-  - name: Rollout The Flux Deployment
-    shell: kubectl -n flux rollout status deployment/flux
-    register: ps
-  - debug: var=ps
+  # - name: Rollout The Flux Deployment
+  #   shell: kubectl -n flux rollout status deployment/flux
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Get Flux's SSH Key to Access Git Repo
-    shell: ./fluxctl_linux_amd64 identity --k8s-fwd-ns flux
-    register: ps
-  - debug: var=ps
+  # - name: Get Flux's SSH Key to Access Git Repo
+  #   shell: ./fluxctl_linux_amd64 identity --k8s-fwd-ns flux
+  #   register: ps
+  # - debug: var=ps
 
   - name: Deploy The Kubernetes Dashboard
     shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
@@ -304,12 +304,12 @@
     register: ps
   - debug: var=ps
 
-  - name: Get Flux's Pod ID
-    shell: kubectl get pods -n flux | awk '{print $1}' | head -n 2 | tail -n 1
-    register: ps
+  # - name: Get Flux's Pod ID
+  #   shell: kubectl get pods -n flux | awk '{print $1}' | head -n 2 | tail -n 1
+  #   register: ps
 
-  - name: Create Known Hosts File In For Flux Operator
-    shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "mkdir -p ~/.ssh && rm -f ~/.ssh/known_hosts && touch ~/.ssh/known_hosts || exit"
+  # - name: Create Known Hosts File In For Flux Operator
+  #   shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "mkdir -p ~/.ssh && rm -f ~/.ssh/known_hosts && touch ~/.ssh/known_hosts || exit"
 
   # - name: SSH-Keyscan Gitlab Instance As A Known Host
   #   shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "ssh-keyscan gitlab.hushbyte.com >> ~/.ssh/known_hosts"
@@ -332,10 +332,10 @@
     register: ps
   - debug: var=ps
 
-  - name: Add Flux Charts To Helm Repos
-    shell: helm repo add fluxcd https://charts.fluxcd.io
-    register: ps
-  - debug: var=ps
+  # - name: Add Flux Charts To Helm Repos
+  #   shell: helm repo add fluxcd https://charts.fluxcd.io
+  #   register: ps
+  # - debug: var=ps
 
   - name: Add Nginx Ingress Charts To Helm Repos
     shell: helm repo add nginx-stable https://helm.nginx.com/stable
@@ -353,17 +353,17 @@
     register: ps
   - debug: var=p
 
-  - name: Apply The HelmRelease Needed For Helm Operator
-    shell: kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/crds.yaml
-    register: ps
-  - debug: var=ps
+  # - name: Apply The HelmRelease Needed For Helm Operator
+  #   shell: kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/crds.yaml
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Install Flux Helm Operator
-    shell: helm upgrade -i helm-operator fluxcd/helm-operator --wait \
-            --namespace flux \
-            --set helm.versions=v3
-    register: ps
-  - debug: var=ps
+  # - name: Install Flux Helm Operator
+  #   shell: helm upgrade -i helm-operator fluxcd/helm-operator --wait \
+  #           --namespace flux \
+  #           --set helm.versions=v3
+  #   register: ps
+  # - debug: var=ps
 
   - name: Kubectl Proxy
     shell: kubectl proxy &
