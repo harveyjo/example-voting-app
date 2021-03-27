@@ -293,23 +293,6 @@
     register: ps
   - debug: var=ps
 
-  # - name: Create Access Token
-  #   shell: kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
-  #   register: ps
-  # - debug: var=ps
-
-  # - name: Get Flux's Pod ID
-  #   shell: kubectl get pods -n flux | awk '{print $1}' | head -n 2 | tail -n 1
-  #   register: ps
-
-  # - name: Create Known Hosts File In For Flux Operator
-  #   shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "mkdir -p ~/.ssh && rm -f ~/.ssh/known_hosts && touch ~/.ssh/known_hosts || exit"
-
-  # - name: SSH-Keyscan Gitlab Instance As A Known Host
-  #   shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "ssh-keyscan gitlab.hushbyte.com >> ~/.ssh/known_hosts"
-  #   register: ps
-  # - debug: var=ps
-
   - name: Download Helm Binary
     shell: wget https://get.helm.sh/helm-v3.2.0-rc.1-linux-amd64.tar.gz
     register: ps
@@ -326,10 +309,6 @@
     register: ps
   - debug: var=ps
 
-  # - name: Add Flux Charts To Helm Repos
-  #   shell: helm repo add fluxcd https://charts.fluxcd.io
-  #   register: ps
-  # - debug: var=ps
 
   - name: Add Nginx Ingress Charts To Helm Repos
     shell: helm repo add nginx-stable https://helm.nginx.com/stable
@@ -346,18 +325,6 @@
     ignore_errors: yes
     register: ps
   - debug: var=p
-
-  # - name: Apply The HelmRelease Needed For Helm Operator
-  #   shell: kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/crds.yaml
-  #   register: ps
-  # - debug: var=ps
-
-  # - name: Install Flux Helm Operator
-  #   shell: helm upgrade -i helm-operator fluxcd/helm-operator --wait \
-  #           --namespace flux \
-  #           --set helm.versions=v3
-  #   register: ps
-  # - debug: var=ps
 
   - name: Kubectl Proxy
     shell: kubectl proxy &
