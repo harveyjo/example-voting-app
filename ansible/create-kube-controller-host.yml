@@ -167,7 +167,7 @@
       follow: yes
 
   - name: Replace Master Node Configuration
-    shell: kops replace ig --name hosting.k8s.local master-us-west-2c -f master-ig-config.yaml --state s3://hosting-kops-state-store
+    shell: kops replace ig --name hosting.k8s.local master-us-west-2c -f kops-master-ig-config.yaml --state s3://hosting-kops-state-store
     ignore_errors: yes
     register: ps
   - debug: var=ps
@@ -179,7 +179,7 @@
       follow: yes
 
   - name: Replace Worker Node Configuration
-    shell: kops replace ig --name hosting.k8s.local nodes -f node-ig-config.yaml --state s3://hosting-kops-state-store
+    shell: kops replace ig --name hosting.k8s.local nodes -f kops-node-ig-config.yaml --state s3://hosting-kops-state-store
     register: ps
   - debug: var=ps
 
