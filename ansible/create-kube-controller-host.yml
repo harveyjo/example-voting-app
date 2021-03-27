@@ -256,53 +256,53 @@
   # - debug: var=ps
 
 
-  - name: Create Kubernetes Dashboard ConfigMap
-    shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
-    register: ps
-  - debug: var=ps
-
-  # - name: Rollout The Flux Deployment
-  #   shell: kubectl -n flux rollout status deployment/flux
+  # - name: Create Kubernetes Dashboard ConfigMap
+  #   shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
   #   register: ps
   # - debug: var=ps
 
-  # - name: Get Flux's SSH Key to Access Git Repo
-  #   shell: ./fluxctl_linux_amd64 identity --k8s-fwd-ns flux
+  # # - name: Rollout The Flux Deployment
+  # #   shell: kubectl -n flux rollout status deployment/flux
+  # #   register: ps
+  # # - debug: var=ps
+
+  # # - name: Get Flux's SSH Key to Access Git Repo
+  # #   shell: ./fluxctl_linux_amd64 identity --k8s-fwd-ns flux
+  # #   register: ps
+  # # - debug: var=ps
+
+  # - name: Deploy The Kubernetes Dashboard
+  #   shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
   #   register: ps
   # - debug: var=ps
 
-  - name: Deploy The Kubernetes Dashboard
-    shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
-    register: ps
-  - debug: var=ps
 
+  # - name: Copy An Admin Service Account
+  #   copy:
+  #     src: ../k8s-specifications/admin-service-account.yaml
+  #     dest: /home/ec2-user/admin-service-account.yaml
+  #     follow: yes
 
-  - name: Copy An Admin Service Account
-    copy:
-      src: ../k8s-specifications/admin-service-account.yaml
-      dest: /home/ec2-user/admin-service-account.yaml
-      follow: yes
+  # - name: Copy Cluster Role Binding
+  #   copy:
+  #     src: ../k8s-specifications/cluster-role-binding.yaml
+  #     dest: /home/ec2-user/cluster-role-binding.yaml
+  #     follow: yes
 
-  - name: Copy Cluster Role Binding
-    copy:
-      src: ../k8s-specifications/cluster-role-binding.yaml
-      dest: /home/ec2-user/cluster-role-binding.yaml
-      follow: yes
+  # - name: Deploy Admin Service Account
+  #   shell: kubectl apply -f admin-service-account.yaml
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Deploy Admin Service Account
-    shell: kubectl apply -f admin-service-account.yaml
-    register: ps
-  - debug: var=ps
+  # - name: Deploy Cluster Role Binding
+  #   shell: kubectl apply -f cluster-role-binding.yaml
+  #   register: ps
+  # - debug: var=ps
 
-  - name: Deploy Cluster Role Binding
-    shell: kubectl apply -f cluster-role-binding.yaml
-    register: ps
-  - debug: var=ps
-
-  - name: Create Access Token
-    shell: kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
-    register: ps
-  - debug: var=ps
+  # - name: Create Access Token
+  #   shell: kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+  #   register: ps
+  # - debug: var=ps
 
   # - name: Get Flux's Pod ID
   #   shell: kubectl get pods -n flux | awk '{print $1}' | head -n 2 | tail -n 1
