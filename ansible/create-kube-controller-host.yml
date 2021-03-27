@@ -1,0 +1,371 @@
+---
+# Name of group from hosts.ini on which the playbook's commands will be run [e.g. awsservers]
+- hosts: awsservers
+  environment:
+    AWS_ACCESS_KEY_ID: AKIAJUCC6BIXCTHZTY7A
+    AWS_SECRET_ACCESS_KEY: HhxZnccccw5oHm4eoVwncvhMPcQ0bYnj45DCLUgJ
+    AWS_REGION: us-west-2
+  tasks:
+  - name: Create SSH Key
+    shell: ssh-keygen -q -t rsa -N '' -f ~/.ssh/id_rsa 2>/dev/null <<< y >/dev/null
+    # register variable
+    register: ps
+
+  - name: Add SSH Key to `authorized_keys`
+    shell: cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
+  - name: Update & Upgrade yum
+    shell: sudo yum update -y
+    # register variable
+    register: ps
+    # print remote server's terminal output locally
+  - debug: var=ps.stdout_lines
+
+  - name: Install Docker Community Edition (Most Recent)
+    shell: sudo yum install docker -y
+    # register variable
+    register: ps
+    # print remote server's terminal output locally
+  - debug: var=ps.stdout_lines
+
+  - name: Start Docker Service
+    shell: sudo service docker start
+    # register variable
+    register: ps
+    # print remote server's terminal output locally
+  - debug: var=ps.stdout_lines
+
+  - name: Download Current Stable Release of Docker-Compose
+    shell: sudo curl -L "https://github.com/docker/compose/releases/download/1.24.1/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+    register: ps
+  - debug: var=ps.stdout
+
+  - name: Apply executable permissions
+    shell: sudo chmod +x /usr/local/bin/docker-compose
+    register: ps
+  - debug: var=ps.stdout
+
+  - name: Add symbolic link to docker-compose
+    shell: sudo ln -sf /usr/local/bin/docker-compose /usr/bin/docker-compose
+    register: ps
+  - debug: var=ps.stdout
+
+  - name: Test Docker Installation
+    shell: docker-compose --version
+    register: ps
+  - debug: var=ps.stdout
+
+
+  - name: Install SSH & RSYNC
+    shell: sudo yum install rsync ssh
+    register: ps
+  - debug: var=ps.stdout
+
+  - name: Check if Swapfile Exists && Is Activated
+    become: true
+    register: ps
+    shell: swapon -s
+  - debug: var=ps.stdout
+
+  - name: Create Swap File
+    shell: sudo dd if=/dev/zero of=/swapfile bs=1024 count=4194304
+    when: ps.stdout == ''
+
+  - name: Set Permissions for Swap File
+    shell: sudo chmod 600 /swapfile
+
+  - name: Set up Linux Swap Area
+    shell: sudo mkswap /swapfile
+    ignore_errors: yes
+
+  - name: Turn on Swap File
+    shell: sudo swapon /swapfile
+    ignore_errors: yes
+
+  - name: Verify Swap File Turned On
+    shell: sudo swapon -s
+    register: ps
+  - debug: var=ps.stdout
+
+  - name: Copy /etc/fstab without Swapfile command
+    become: yes
+    register: ps
+    shell: cat /etc/fstab | grep -v /swapfile
+    failed_when: ps.stdout == ''
+    ignore_errors: yes
+  - debug: var=ps.stdout
+
+  - name: Rewrite /etc/fstab with saved variable
+    become: yes
+    copy:
+      content: "{{ ps.stdout }}"
+      dest: "/etc/fstab"
+
+  - name: Enable Turning On Swap File on Startup/Reboot
+    become: yes
+    shell: echo "/swapfile swap swap defaults 0 0" >> /etc/fstab
+    register: ps
+  - debug: var=ps
+
+
+  - name: Install KOPS
+    become: yes
+    shell: curl -LO https://github.com/kubernetes/kops/releases/download/$(curl -s https://api.github.com/repos/kubernetes/kops/releases/latest | grep tag_name | cut -d '"' -f 4)/kops-linux-amd64
+    register: ps
+  - debug: var=ps
+
+
+  - name: Make KOPS Binary executable
+    become: yes
+    shell: chmod +x kops-linux-amd64
+    register: ps
+  - debug: var=ps
+
+  - name: Move the kops binary into PATH
+    become: yes
+    shell: mv kops-linux-amd64 /usr/local/bin/kops
+    register: ps
+  - debug: var=ps
+
+  - name: Set KOPS State Store
+    shell: export KOPS_STATE_STORE=s3://hosting-kops-state-store
+    register: ps
+  - debug: var=ps
+
+  - name: Set AWS Access Key
+    shell: export AWS_ACCESS_KEY_ID=AKIAJUCC6BIXCTHZTY7A
+    register: ps
+  - debug: var=ps
+
+  - name: Set AWS Secret Key
+    shell: export AWS_SECRET_ACCESS_KEY=HhxZnccccw5oHm4eoVwncvhMPcQ0bYnj45DCLUgJ
+    register: ps
+  - debug: var=ps
+
+
+  - name: Create KOPS Base Cluster Configuration
+    shell: kops create cluster --zones=us-west-2c hosting.k8s.local --state s3://hosting-kops-state-store
+    ignore_errors: yes
+    register: ps
+  - debug: var=ps
+
+  # - name: Copy Kops Cluster Configuration
+  #   copy:
+  #     src: ../kubernetes/kops-config.yml
+  #     dest: /home/ec2-user/kops-config.yml
+  #     follow: yes
+
+  # - name: Set KOPS Cluster Configuration
+  #   shell: pwd && kops replace -f kops-config.yml --state s3://hosting-kops-state-store
+  #   register: ps
+  # - debug: var=ps
+
+  # - name: Copy Master Node Configuration
+  #   copy:
+  #     src: ../kubernetes/kops-master-ig-config.yml
+  #     dest: /home/ec2-user/master-ig-config.yml
+  #     follow: yes
+
+  # - name: Replace Master Node Configuration
+  #   shell: kops replace ig --name hosting.k8s.local master-us-west-2c -f master-ig-config.yml --state s3://hosting-kops-state-store
+  #   ignore_errors: yes
+  #   register: ps
+  # - debug: var=ps
+
+  # - name: Copy Worker Node Configuration
+  #   copy:
+  #     src: ../kubernetes/kops-node-ig-config.yml
+  #     dest: /home/ec2-user/node-ig-config.yml
+  #     follow: yes
+
+  # - name: Replace Worker Node Configuration
+  #   shell: kops replace ig --name hosting.k8s.local nodes -f node-ig-config.yml --state s3://hosting-kops-state-store
+  #   register: ps
+  # - debug: var=ps
+
+  - name: Delete Existing SSH Key If It's There
+    shell: kops delete secret --name hosting.k8s.local sshpublickey admin --state s3://hosting-kops-state-store
+    ignore_errors: yes
+    register: ps
+  - debug: var=ps
+
+  - name: Add SSH Key To Be Used With Rollout
+    shell: kops create secret --name hosting.k8s.local sshpublickey admin -i ~/.ssh/id_rsa.pub --state s3://hosting-kops-state-store
+    register: ps
+  - debug: var=ps
+
+  - name: Rollout The Cluster
+    shell: kops update cluster hosting.k8s.local --yes --state s3://hosting-kops-state-store
+    register: ps
+  - debug: var=ps
+
+  - name: Download Kubernetes/Kubectl
+    shell: curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
+    register: ps
+  - debug: var=ps
+
+
+  - name: Make Kubernetes/Kubectl Binary Executable
+    shell: chmod +x ./kubectl
+    register: ps
+  - debug: var=ps
+
+
+  - name: Move Kubernetes/Kubectl Binary To path
+    shell: sudo mv ./kubectl /usr/local/bin/kubectl
+    register: ps
+  - debug: var=ps
+
+# Setup Flux CD To Keep Cluster In Sync With Wordpress Repo
+
+  - name: Download Fluxctl
+    shell: wget https://github.com/fluxcd/flux/releases/download/1.19.0/fluxctl_linux_amd64
+    register: ps
+  - debug: var=ps
+
+  - name: Make fluxctl executable
+    shell: chmod +x fluxctl_linux_amd64 
+    register: ps
+  - debug: var=ps
+
+  - name: Create Flux Kuberntes namespace
+    shell: kubectl create ns flux
+    ignore_errors: yes
+    register: ps
+  - debug: var=ps
+
+  - name: Install Flux
+    shell: ./fluxctl_linux_amd64 install \
+            --git-user=flux \
+            --git-email=jonathan@hushbyte.com \
+            --git-url=git@github.com:harveyjo/example-voting-app.git \
+            --git-path=namespaces,workloads \
+            --namespace=flux | kubectl apply -f -
+    register: ps
+  - debug: var=ps
+
+  # - name: Copy Flux Deployment Configuration
+  #   copy:
+  #     src: ../k8s-specifications/flux-deployment.yaml
+  #     dest: /home/ec2-user/flux-deployment.yaml
+  #     follow: yes
+
+  # - name: Deploy Flux
+  #   shell: kubectl apply -f flux-deployment.yaml
+  #   register: ps
+  # - debug: var=ps
+
+
+  - name: Create Kubernetes Dashboard ConfigMap
+    shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+    register: ps
+  - debug: var=ps
+
+  - name: Rollout The Flux Deployment
+    shell: kubectl -n flux rollout status deployment/flux
+    register: ps
+  - debug: var=ps
+
+  - name: Get Flux's SSH Key to Access Git Repo
+    shell: ./fluxctl_linux_amd64 identity --k8s-fwd-ns flux
+    register: ps
+  - debug: var=ps
+
+  - name: Deploy The Kubernetes Dashboard
+    shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+    register: ps
+  - debug: var=ps
+
+
+  - name: Copy An Admin Service Account
+    copy:
+      src: ../k8s-specifications/admin-service-account.yaml
+      dest: /home/ec2-user/admin-service-account.yaml
+      follow: yes
+
+  - name: Copy Cluster Role Binding
+    copy:
+      src: ../k8s-specifications/cluster-role-binding.yaml
+      dest: /home/ec2-user/cluster-role-binding.yaml
+      follow: yes
+
+  - name: Deploy Admin Service Account
+    shell: kubectl apply -f admin-service-account.yaml
+    register: ps
+  - debug: var=ps
+
+  - name: Deploy Cluster Role Binding
+    shell: kubectl apply -f cluster-role-binding.yaml
+    register: ps
+  - debug: var=ps
+
+  - name: Create Access Token
+    shell: kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
+    register: ps
+  - debug: var=ps
+
+  - name: Get Flux's Pod ID
+    shell: kubectl get pods -n flux | awk '{print $1}' | head -n 2 | tail -n 1
+    register: ps
+
+  - name: Create Known Hosts File In For Flux Operator
+    shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "mkdir -p ~/.ssh && rm -f ~/.ssh/known_hosts && touch ~/.ssh/known_hosts || exit"
+
+  # - name: SSH-Keyscan Gitlab Instance As A Known Host
+  #   shell: kubectl exec -n flux {{ ps.stdout }} -- bash -c "ssh-keyscan gitlab.hushbyte.com >> ~/.ssh/known_hosts"
+  #   register: ps
+  # - debug: var=ps
+
+  - name: Download Helm Binary
+    shell: wget https://get.helm.sh/helm-v3.2.0-rc.1-linux-amd64.tar.gz
+    register: ps
+  - debug: var=ps
+
+  - name: Unpack Helm Binary
+    shell: tar -zxvf helm-v3.2.0-rc.1-linux-amd64.tar.gz
+    register: ps
+  - debug: var=ps
+
+  - name: Move Helm Binary To Desired Location
+    shell: mv linux-amd64/helm /usr/local/bin/helm
+    become: true
+    register: ps
+  - debug: var=ps
+
+  - name: Add Flux Charts To Helm Repos
+    shell: helm repo add fluxcd https://charts.fluxcd.io
+    register: ps
+  - debug: var=ps
+
+  - name: Add Nginx Ingress Charts To Helm Repos
+    shell: helm repo add nginx-stable https://helm.nginx.com/stable
+    register: ps
+  - debug: var=ps
+
+  - name: Update Helm Repos
+    shell: helm repo update
+    register: ps
+  - debug: var=ps
+
+  - name: Install Nginx Ingress
+    shell: helm install wordpress-router nginx-stable/nginx-ingress --namespace nginx-ingress
+    ignore_errors: yes
+    register: ps
+  - debug: var=p
+
+  - name: Apply The HelmRelease Needed For Helm Operator
+    shell: kubectl apply -f https://raw.githubusercontent.com/fluxcd/helm-operator/master/deploy/crds.yaml
+    register: ps
+  - debug: var=ps
+
+  - name: Install Flux Helm Operator
+    shell: helm upgrade -i helm-operator fluxcd/helm-operator --wait \
+            --namespace flux \
+            --set helm.versions=v3
+    register: ps
+  - debug: var=ps
+
+  - name: Kubectl Proxy
+    shell: kubectl proxy &
+    register: ps
+  - debug: var=ps
