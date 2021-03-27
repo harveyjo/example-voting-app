@@ -200,19 +200,13 @@
   - debug: var=ps
 
   - name: Download Kubernetes/Kubectl
-    shell: curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.16.0/bin/linux/amd64/kubectl
+    shell: curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     register: ps
   - debug: var=ps
 
 
-  - name: Make Kubernetes/Kubectl Binary Executable
-    shell: chmod +x ./kubectl
-    register: ps
-  - debug: var=ps
-
-
-  - name: Move Kubernetes/Kubectl Binary To path
-    shell: sudo mv ./kubectl /usr/local/bin/kubectl
+  - name: Install Kubectl
+    shell: sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
     register: ps
   - debug: var=ps
 
@@ -277,27 +271,27 @@
   # - debug: var=ps
 
 
-  # - name: Copy An Admin Service Account
-  #   copy:
-  #     src: ../k8s-specifications/admin-service-account.yaml
-  #     dest: /home/ec2-user/admin-service-account.yaml
-  #     follow: yes
+  - name: Copy An Admin Service Account
+    copy:
+      src: ../k8s-specifications/admin-service-account.yaml
+      dest: /home/ec2-user/admin-service-account.yaml
+      follow: yes
 
-  # - name: Copy Cluster Role Binding
-  #   copy:
-  #     src: ../k8s-specifications/cluster-role-binding.yaml
-  #     dest: /home/ec2-user/cluster-role-binding.yaml
-  #     follow: yes
+  - name: Copy Cluster Role Binding
+    copy:
+      src: ../k8s-specifications/cluster-role-binding.yaml
+      dest: /home/ec2-user/cluster-role-binding.yaml
+      follow: yes
 
-  # - name: Deploy Admin Service Account
-  #   shell: kubectl apply -f admin-service-account.yaml
-  #   register: ps
-  # - debug: var=ps
+  - name: Deploy Admin Service Account
+    shell: kubectl apply -f admin-service-account.yaml
+    register: ps
+  - debug: var=ps
 
-  # - name: Deploy Cluster Role Binding
-  #   shell: kubectl apply -f cluster-role-binding.yaml
-  #   register: ps
-  # - debug: var=ps
+  - name: Deploy Cluster Role Binding
+    shell: kubectl apply -f cluster-role-binding.yaml
+    register: ps
+  - debug: var=ps
 
   # - name: Create Access Token
   #   shell: kubectl -n kubernetes-dashboard describe secret $(kubectl -n kubernetes-dashboard get secret | grep admin-user | awk '{print $1}')
