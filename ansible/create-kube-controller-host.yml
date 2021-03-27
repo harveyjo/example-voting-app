@@ -163,7 +163,7 @@
   - name: Copy Master Node Configuration
     copy:
       src: ../k8s-specifications/kops-master-ig-config.yaml
-      dest: /home/ec2-user/master-ig-config.ymal
+      dest: /home/ec2-user/kops-master-ig-config.yaml
       follow: yes
 
   - name: Replace Master Node Configuration
@@ -175,7 +175,7 @@
   - name: Copy Worker Node Configuration
     copy:
       src: ../k8s-specifications/kops-node-ig-config.yaml
-      dest: /home/ec2-user/node-ig-config.yaml
+      dest: /home/ec2-user/kops-node-ig-config.yaml
       follow: yes
 
   - name: Replace Worker Node Configuration
