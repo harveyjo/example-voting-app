@@ -172,16 +172,16 @@
     register: ps
   - debug: var=ps
 
-  - name: Copy Worker Node Configuration
-    copy:
-      src: ../k8s-specifications/kops-node-ig-config.yaml
-      dest: /home/ec2-user/kops-node-ig-config.yaml
-      follow: yes
+  # - name: Copy Worker Node Configuration
+  #   copy:
+  #     src: ../k8s-specifications/kops-node-ig-config.yaml
+  #     dest: /home/ec2-user/kops-node-ig-config.yaml
+  #     follow: yes
 
-  - name: Replace Worker Node Configuration
-    shell: kops replace ig --name hosting.k8s.local nodes -f kops-node-ig-config.yaml --state s3://hosting-kops-state-store
-    register: ps
-  - debug: var=ps
+  # - name: Replace Worker Node Configuration
+  #   shell: kops replace ig --name hosting.k8s.local nodes -f kops-node-ig-config.yaml --state s3://hosting-kops-state-store
+  #   register: ps
+  # - debug: var=ps
 
   - name: Delete Existing SSH Key If It's There
     shell: kops delete secret --name hosting.k8s.local sshpublickey admin --state s3://hosting-kops-state-store
