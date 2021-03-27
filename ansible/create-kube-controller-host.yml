@@ -149,39 +149,39 @@
     register: ps
   - debug: var=ps
 
-  # - name: Copy Kops Cluster Configuration
-  #   copy:
-  #     src: ../kubernetes/kops-config.yml
-  #     dest: /home/ec2-user/kops-config.yml
-  #     follow: yes
+  - name: Copy Kops Cluster Configuration
+    copy:
+      src: ../k8s-specifications/kops-config.yaml
+      dest: /home/ec2-user/kops-config.yaml
+      follow: yes
 
-  # - name: Set KOPS Cluster Configuration
-  #   shell: pwd && kops replace -f kops-config.yml --state s3://hosting-kops-state-store
-  #   register: ps
-  # - debug: var=ps
+  - name: Set KOPS Cluster Configuration
+    shell: pwd && kops replace -f kops-config.yaml --state s3://hosting-kops-state-store
+    register: ps
+  - debug: var=ps
 
-  # - name: Copy Master Node Configuration
-  #   copy:
-  #     src: ../kubernetes/kops-master-ig-config.yml
-  #     dest: /home/ec2-user/master-ig-config.yml
-  #     follow: yes
+  - name: Copy Master Node Configuration
+    copy:
+      src: ../k8s-specifications/kops-master-ig-config.yaml
+      dest: /home/ec2-user/master-ig-config.ymal
+      follow: yes
 
-  # - name: Replace Master Node Configuration
-  #   shell: kops replace ig --name hosting.k8s.local master-us-west-2c -f master-ig-config.yml --state s3://hosting-kops-state-store
-  #   ignore_errors: yes
-  #   register: ps
-  # - debug: var=ps
+  - name: Replace Master Node Configuration
+    shell: kops replace ig --name hosting.k8s.local master-us-west-2c -f master-ig-config.yaml --state s3://hosting-kops-state-store
+    ignore_errors: yes
+    register: ps
+  - debug: var=ps
 
-  # - name: Copy Worker Node Configuration
-  #   copy:
-  #     src: ../kubernetes/kops-node-ig-config.yml
-  #     dest: /home/ec2-user/node-ig-config.yml
-  #     follow: yes
+  - name: Copy Worker Node Configuration
+    copy:
+      src: ../k8s-specifications/kops-node-ig-config.yaml
+      dest: /home/ec2-user/node-ig-config.yaml
+      follow: yes
 
-  # - name: Replace Worker Node Configuration
-  #   shell: kops replace ig --name hosting.k8s.local nodes -f node-ig-config.yml --state s3://hosting-kops-state-store
-  #   register: ps
-  # - debug: var=ps
+  - name: Replace Worker Node Configuration
+    shell: kops replace ig --name hosting.k8s.local nodes -f node-ig-config.yaml --state s3://hosting-kops-state-store
+    register: ps
+  - debug: var=ps
 
   - name: Delete Existing SSH Key If It's There
     shell: kops delete secret --name hosting.k8s.local sshpublickey admin --state s3://hosting-kops-state-store
