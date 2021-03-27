@@ -2,8 +2,8 @@
 # Name of group from hosts.ini on which the playbook's commands will be run [e.g. awsservers]
 - hosts: awsservers
   environment:
-    AWS_ACCESS_KEY_ID: $AWS_ACCESS_KEY_ID
-    AWS_SECRET_ACCESS_KEY: $AWS_SECRET_ACCESS_KEY
+    AWS_ACCESS_KEY_ID: {{aws_access_key_id}}
+    AWS_SECRET_ACCESS_KEY: {{aws_secret_access_key}}
     AWS_REGION: us-west-2
   tasks:
   - name: Create SSH Key
